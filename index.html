@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TuProfe20 Lab Física - Fuerza Eléctrica</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- KaTeX for LaTeX Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <!-- GSAP for Web Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        lab: {
+                            bg: '#F0F7FF',
+                            card: '#FFFFFF',
+                            border: '#DBEAFE',
+                            accent: '#4F46E5',
+                            pos: '#FF3B5C',
+                            neg: '#0077FF',
+                            vec: '#00C48C',
+                            res: '#FF8A00'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #EFF6FF 0%, #F5F3FF 50%, #ECFEFF 100%);
+            color: #1E293B;
+            overflow-x: hidden;
+        }
+        /* Bright blueprint grid pattern for interactive physics lab feel */
+        .bg-grid-pattern {
+            background-color: #F8FAFC;
+            background-image: 
+                radial-gradient(#CBD5E1 1.3px, transparent 1.3px),
+                linear-gradient(to right, rgba(99, 102, 241, 0.06) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(99, 102, 241, 0.06) 1px, transparent 1px);
+            background-size: 24px 24px, 24px 24px, 24px 24px;
+        }
+        .step-card {
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .step-card:hover {
+            transform: translateY(-2px);
+        }
+        .step-active {
+            border-color: #6366F1 !important;
+            background: linear-gradient(135deg, #EEF2FF 0%, #E0F2FE 100%) !important;
+            box-shadow: 0 12px 28px -6px rgba(99, 102, 241, 0.25);
+            transform: scale(1.015);
+        }
+        .katex-display {
+            margin: 0.5em 0 !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 0.25rem 0;
+        }
+        /* Custom bright scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #EFF6FF;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #93C5FD;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #60A5FA;
+        }
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+        .animate-float {
+            animation: floatSlow 3s ease-in-out infinite;
+        }
+        .btn-bounce:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b-2 border-indigo-100 px-4 lg:px-8 py-3 shadow-sm">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            <!-- Brand Title -->
+            <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-sky-500 to-emerald-400 flex items-center justify-center shadow-lg shadow-indigo-500/30 transform hover:rotate-12 transition-transform cursor-pointer">
+                    <i class="fa-solid fa-atom text-white text-2xl fa-spin" style="--fa-animation-duration: 10s;"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-700 via-sky-600 to-teal-500 bg-clip-text text-transparent">
+                            TuProfe20 Lab Física
+                        </h1>
+                        <span class="hidden sm:inline-block px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wider bg-amber-100 text-amber-700 rounded-full border border-amber-300">
+                            Interactivo 2.0
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 font-semibold">¡Aprende Jugando Paso a Paso! • Fuerza Eléctrica y Electrización</p>
+                </div>
+            </div>
+
+            <!-- Section Switcher (Páginas 6-7 vs Páginas 8-9) -->
+            <div class="flex items-center bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shadow-inner">
+                <button id="tab-sec1" onclick="switchSection(1)" class="btn-bounce px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-sky-500 text-white shadow-md shadow-indigo-500/25">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>Páginas 6 y 7 (Prob. 1 - 7)</span>
+                </button>
+                <button id="tab-sec2" onclick="switchSection(2)" class="btn-bounce px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 text-slate-600 hover:text-indigo-600">
+                    <i class="fa-solid fa-bolt"></i>
+                    <span>Páginas 8 y 9 (Prob. 1 - 7)</span>
+                </button>
+            </div>
+
+            <!-- Quick Formula Cheatsheet Button -->
+            <button onclick="toggleModal('formula-modal')" class="btn-bounce px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-xs sm:text-sm font-extrabold text-white shadow-md shadow-orange-500/25 flex items-center gap-2 transition-all">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span class="hidden sm:inline">Formulario Mágico</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Problem Selector Bar -->
+    <div class="bg-white/75 backdrop-blur-md border-b border-indigo-100 px-4 lg:px-8 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-3 overflow-x-auto no-scrollbar">
+            <div class="flex items-center gap-2" id="problem-pills">
+                <!-- Dynamically populated pills 1 to 7 -->
+            </div>
+            <div class="hidden xl:flex items-center gap-3 text-xs font-bold text-slate-600 bg-slate-100 px-3.5 py-1.5 rounded-full border border-slate-200 shrink-0">
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-500 inline-block shadow-sm"></span> Carga (+)</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-600 inline-block shadow-sm"></span> Carga (-)</span>
+                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block shadow-sm"></span> Fuerza $\vec{F}$</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left Column: Interactive Animated Simulation Canvas (7 cols on large screens) -->
+        <section class="lg:col-span-7 flex flex-col gap-4 lg:sticky lg:top-24">
+            <!-- Problem Statement Card -->
+            <div class="bg-white border-2 border-indigo-100 rounded-3xl p-5 shadow-xl shadow-indigo-500/5 relative overflow-hidden">
+                <div class="absolute -top-6 -right-6 w-32 h-32 bg-gradient-to-br from-sky-400/20 to-indigo-500/20 rounded-full blur-xl pointer-events-none"></div>
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <span id="prob-badge" class="px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-indigo-100 text-indigo-700 border border-indigo-200 shadow-sm">
+                        Páginas 6-7 • Problema 1
+                    </span>
+                    <span id="prob-topic" class="px-3 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200">
+                        Cuantización de la Carga
+                    </span>
+                </div>
+                <div id="prob-statement" class="text-sm sm:text-base text-slate-700 leading-relaxed font-medium">
+                    <!-- Rendered statement -->
+                </div>
+            </div>
+
+            <!-- Interactive SVG Physics Stage -->
+            <div class="bg-white border-2 border-indigo-100 rounded-3xl overflow-hidden shadow-2xl shadow-indigo-500/10 flex flex-col">
+                <!-- Stage Header -->
+                <div class="px-5 py-3.5 bg-gradient-to-r from-indigo-50 via-sky-50 to-teal-50 border-b border-indigo-100 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500 animate-ping"></span>
+                        <span class="text-xs sm:text-sm font-extrabold uppercase tracking-wide text-indigo-900">
+                            <i class="fa-solid fa-flask-vial text-indigo-600 mr-1"></i> Simulador Dinámico en Vivo
+                        </span>
+                    </div>
+                    <div id="step-indicator-badge" class="text-xs font-extrabold px-3 py-1 rounded-full bg-indigo-600 text-white shadow-sm">
+                        Paso 1 de 4
+                    </div>
+                </div>
+
+                <!-- Step Progress Bar -->
+                <div class="w-full h-2 bg-slate-100 overflow-hidden">
+                    <div id="step-progress-bar" class="h-full bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-400 transition-all duration-500 w-1/4"></div>
+                </div>
+
+                <!-- SVG Container -->
+                <div class="relative w-full h-[330px] sm:h-[380px] bg-grid-pattern flex items-center justify-center overflow-hidden select-none" id="canvas-wrapper">
+                    <svg id="physics-svg" viewBox="0 0 700 360" class="w-full h-full">
+                        <defs>
+                            <!-- Soft Drop Shadow for Crisp Light Theme -->
+                            <filter id="drop-shadow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+                            </filter>
+                            <!-- Arrowheads -->
+                            <marker id="arrow-green" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669" />
+                            </marker>
+                            <marker id="arrow-amber" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 1 L 10 5 L 0 9 z" fill="#EA580C" />
+                            </marker>
+                            <marker id="arrow-sky" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284C7" />
+                            </marker>
+                            <marker id="arrow-purple" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 1 L 10 5 L 0 9 z" fill="#7C3AED" />
+                            </marker>
+                            <!-- Vibrant Sphere Gradients -->
+                            <radialGradient id="grad-pos" cx="35%" cy="35%" r="65%">
+                                <stop offset="0%" stop-color="#FDA4AF" />
+                                <stop offset="45%" stop-color="#F43F5E" />
+                                <stop offset="100%" stop-color="#BE123C" />
+                            </radialGradient>
+                            <radialGradient id="grad-neg" cx="35%" cy="35%" r="65%">
+                                <stop offset="0%" stop-color="#93C5FD" />
+                                <stop offset="45%" stop-color="#2563EB" />
+                                <stop offset="100%" stop-color="#1D4ED8" />
+                            </radialGradient>
+                            <radialGradient id="grad-neutral" cx="35%" cy="35%" r="65%">
+                                <stop offset="0%" stop-color="#F1F5F9" />
+                                <stop offset="55%" stop-color="#94A3B8" />
+                                <stop offset="100%" stop-color="#475569" />
+                            </radialGradient>
+                        </defs>
+                        <!-- Dynamic SVG Content Injected by JS -->
+                        <g id="svg-scene"></g>
+                    </svg>
+
+                    <!-- Floating Interactive Caption Banner -->
+                    <div id="canvas-caption" class="absolute bottom-3.5 left-4 right-4 bg-white/95 backdrop-blur-md border-2 border-indigo-200 rounded-2xl px-4 py-3 text-xs sm:text-sm text-slate-800 font-semibold flex items-center gap-3 shadow-lg shadow-indigo-500/10">
+                        <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-lightbulb text-base animate-bounce"></i>
+                        </div>
+                        <span id="canvas-caption-text">¡Haz clic en "Siguiente Paso" o "Auto-Play" para ver la magia de la física!</span>
+                    </div>
+                </div>
+
+                <!-- Animation Controls Bar -->
+                <div class="p-4 bg-slate-50 border-t border-indigo-100 flex flex-wrap items-center justify-between gap-2.5">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="prevStep()" id="btn-prev" class="btn-bounce px-3.5 py-2.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 disabled:opacity-40 disabled:pointer-events-none text-xs sm:text-sm font-bold text-slate-700 flex items-center gap-1.5 shadow-sm transition">
+                            <i class="fa-solid fa-backward-step"></i> Anterior
+                        </button>
+                        <button onclick="nextStep()" id="btn-next" class="btn-bounce px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-500 hover:from-indigo-700 hover:to-sky-600 text-xs sm:text-sm font-extrabold text-white flex items-center gap-2 shadow-lg shadow-indigo-500/30 transition">
+                            Siguiente Paso <i class="fa-solid fa-forward-step"></i>
+                        </button>
+                        <button onclick="toggleAutoPlay()" id="btn-autoplay" class="btn-bounce px-3.5 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-800 text-xs sm:text-sm font-extrabold flex items-center gap-1.5 transition" title="Reproducir pasos automáticamente">
+                            <i class="fa-solid fa-play"></i> <span>Auto-Play</span>
+                        </button>
+                        <button onclick="replayCurrentStep()" class="btn-bounce p-2.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-indigo-600 text-xs sm:text-sm shadow-sm transition" title="Repetir animación de este paso">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="showAllSteps()" class="btn-bounce px-3.5 py-2.5 rounded-xl bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 text-emerald-800 text-xs font-extrabold transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-check-double"></i> ¡Ver Solución!
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Column: Step-by-Step Mathematical Resolution in LaTeX (5 cols on large screens) -->
+        <section class="lg:col-span-5 flex flex-col gap-4">
+            <div class="bg-white border-2 border-indigo-100 rounded-3xl p-5 shadow-xl shadow-indigo-500/5">
+                <div class="flex items-center justify-between border-b-2 border-slate-100 pb-3.5 mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-sky-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+                            <i class="fa-solid fa-list-check text-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-base sm:text-lg font-extrabold text-slate-800">Pizarra Interactiva Paso a Paso</h2>
+                            <p class="text-xs text-slate-500 font-medium">Toca cualquier tarjeta para animar ese paso</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Steps List Container -->
+                <div id="steps-container" class="flex flex-col gap-3.5">
+                    <!-- Dynamically populated step cards -->
+                </div>
+
+                <!-- Final Answer Highlight Box -->
+                <div id="final-answer-box" class="mt-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white shadow-xl shadow-emerald-500/25 flex items-center justify-between gap-4 transition-all duration-500">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-12 h-12 rounded-2xl bg-white/25 backdrop-blur-sm border border-white/40 flex items-center justify-center text-white shrink-0 shadow-inner">
+                            <i class="fa-solid fa-trophy text-2xl animate-float"></i>
+                        </div>
+                        <div>
+                            <span class="text-[11px] font-mono uppercase tracking-widest text-emerald-100 block font-extrabold">Respuesta Ganadora</span>
+                            <div id="final-answer-math" class="text-base sm:text-xl font-extrabold text-white drop-shadow-sm">
+                                <!-- LaTeX Final Answer -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-1.5 shrink-0">
+                        <button onclick="prevProblem()" class="btn-bounce p-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold backdrop-blur-sm transition" title="Problema Anterior">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button onclick="nextProblem()" class="btn-bounce px-3.5 py-2.5 rounded-xl bg-white text-emerald-700 hover:bg-emerald-50 font-extrabold text-xs flex items-center gap-1.5 shadow-md transition" title="Siguiente Problema">
+                            Sig. Reto <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Formula Reference Modal -->
+    <div id="formula-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white border-2 border-indigo-200 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative">
+            <div class="flex items-center justify-between border-b-2 border-slate-100 pb-4 mb-5">
+                <h3 class="text-lg sm:text-xl font-extrabold text-indigo-700 flex items-center gap-2.5">
+                    <span class="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </span>
+                    Formulario Esencial: Fuerza Eléctrica
+                </h3>
+                <button onclick="toggleModal('formula-modal')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div class="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-200">
+                    <h4 class="font-extrabold text-indigo-900 mb-1">1. Cuantización de la Carga</h4>
+                    <p class="text-xs text-slate-600 mb-2">Todo cuerpo electrizado gana o pierde un número entero $n$ de electrones:</p>
+                    <div class="bg-white p-2.5 rounded-xl text-center border border-indigo-100 shadow-sm text-indigo-950 font-bold">
+                        $$Q = \pm n \cdot |q_{e^-}|$$
+                    </div>
+                    <ul class="text-xs text-slate-700 mt-2.5 space-y-1 font-medium">
+                        <li>• Carga del electrón: $|q_{e^-}| = 1,6 \times 10^{-19}\text{ C}$</li>
+                        <li>• <span class="text-blue-600 font-bold">Signo ($-$)</span>: cuando <b>gana</b> electrones.</li>
+                        <li>• <span class="text-rose-600 font-bold">Signo ($+$)</span>: cuando <b>pierde</b> electrones.</li>
+                    </ul>
+                </div>
+                <div class="p-4 rounded-2xl bg-sky-50/70 border border-sky-200">
+                    <h4 class="font-extrabold text-sky-900 mb-1">2. Ley Cuantitativa de Coulomb</h4>
+                    <p class="text-xs text-slate-600 mb-2">Módulo de la fuerza de atracción o repulsión entre dos cargas:</p>
+                    <div class="bg-white p-2.5 rounded-xl text-center border border-sky-100 shadow-sm text-sky-950 font-bold">
+                        $$F_E = \frac{K \cdot |q_1| \cdot |q_2|}{d^2}$$
+                    </div>
+                    <ul class="text-xs text-slate-700 mt-2.5 space-y-1 font-medium">
+                        <li>• Constante en aire/vacío: $K = 9 \times 10^9\text{ N}\cdot\text{m}^2/\text{C}^2$</li>
+                        <li>• Distancia $d$ siempre en <b>metros ($\text{m}$)</b>.</li>
+                    </ul>
+                </div>
+                <div class="p-4 rounded-2xl bg-amber-50/70 border border-amber-200">
+                    <h4 class="font-extrabold text-amber-900 mb-1">3. Prefijos y Conversiones</h4>
+                    <ul class="text-xs text-slate-700 space-y-2 mt-2 font-medium">
+                        <li>• Milicoulomb: $1\text{ mC} = 10^{-3}\text{ C}$</li>
+                        <li>• Microcoulomb: $1\text{ }\mu\text{C} = 10^{-6}\text{ C}$</li>
+                        <li>• Centímetros a metros: $100\text{ cm} = 1\text{ m}$</li>
+                    </ul>
+                </div>
+                <div class="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200">
+                    <h4 class="font-extrabold text-emerald-900 mb-1">4. Suma Vectorial sobre una Carga</h4>
+                    <ul class="text-xs text-slate-700 space-y-2 mt-2 font-medium">
+                        <li>• <b>Vectores colineales opuestos:</b> $$F_R = |F_1 - F_2|$$</li>
+                        <li>• <b>Vectores perpendiculares ($90^\circ$):</b> $$F_R = \sqrt{F_1^2 + F_2^2}$$</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================================
+        // DATABASE OF ALL 14 PROBLEMS (PÁGINAS 6-7: 1..7 & PÁGINAS 8-9: 1..7)
+        // ============================================================================
+        const PROBLEMS_DB = {
+            // ------------------------------------------------------------------------
+            // SECCIÓN 1: PÁGINAS 6 Y 7 (Problemas 1 al 7)
+            // ------------------------------------------------------------------------
+            1: [
+                {
+                    id: 1,
+                    pageLabel: "Página 6 • Problema 1",
+                    topic: "Cuantización de la Carga Eléctrica",
+                    statement: "Una esfera gana $10^{20}$ electrones por frotamiento. Determine la cantidad de carga que presenta dicha esfera si inicialmente estaba eléctricamente neutra.",
+                    finalAnswer: "$$Q = -16\\text{ C}$$",
+                    sceneType: "quantization",
+                    sceneParams: {
+                        mode: "gain",
+                        nText: "10²⁰ e⁻",
+                        qFinalText: "Q = -16 C",
+                        objectLabel: "Esfera"
+                    },
+                    steps: [
+                        {
+                            title: "Identificar los datos y el fenómeno físico",
+                            explanation: "La esfera inicialmente neutra <b>gana</b> electrones por frotamiento. Por la primera ley electrostática, al tener exceso de electrones adquiere <b>carga negativa ($-$)</b>.",
+                            math: "$$n = 10^{20}\\text{ electrones ganados}$$ $$|q_{e^-}| = 1,6 \\times 10^{-19}\\text{ C}$$",
+                            caption: "Paso 1: La esfera está inicialmente neutra (igual número de protones y electrones)."
+                        },
+                        {
+                            title: "Aplicar la Ley de Cuantización de la Carga",
+                            explanation: "Usamos la ecuación fundamental de cuantización eligiendo el signo negativo ($-$) porque gana electrones:",
+                            math: "$$Q = -n \\cdot |q_{e^-}|$$",
+                            caption: "Paso 2: Una nube de 10²⁰ electrones se transfiere hacia la esfera por frotamiento."
+                        },
+                        {
+                            title: "Reemplazar los valores numéricos",
+                            explanation: "Sustituimos $n = 10^{20}$ y el valor absoluto de la carga del electrón $|q_{e^-}| = 1,6 \\times 10^{-19}\\text{ C}$:",
+                            math: "$$Q = -10^{20} \\times 1,6 \\times 10^{-19}\\text{ C}$$",
+                            caption: "Paso 3: Multiplicamos la cantidad de electrones por la carga elemental de cada electrón."
+                        },
+                        {
+                            title: "Operar los exponentes en base 10",
+                            explanation: "Sumamos los exponentes de base diez ($20 - 19 = 1$) y calculamos el producto final:",
+                            math: "$$Q = -1,6 \\times 10^{20 - 19}\\text{ C} = -1,6 \\times 10^{1}\\text{ C} = -16\\text{ C}$$",
+                            caption: "Paso 4: ¡Resultado obtenido! La esfera queda electrizada con Q = -16 C."
+                        }
+                    ]
+                },
+                {
+                    id: 2,
+                    pageLabel: "Página 6 • Problema 2",
+                    topic: "Fuerza Eléctrica Resultante Colineal",
+                    statement: "La figura muestra las partículas $A$, $B$ y $C$ electrizadas tal que $B$ repele a $C$ con una fuerza eléctrica de módulo $18\\text{ N}$ y $A$ atrae a la partícula $B$ con una fuerza eléctrica de módulo $12\\text{ N}$. Determine el módulo de la fuerza eléctrica resultante sobre $B$.",
+                    finalAnswer: "$$F_R = 6\\text{ N}$$",
+                    sceneType: "collinear_B",
+                    sceneParams: {
+                        fAB: 12,
+                        fBC: 18,
+                        fR: 6
+                    },
+                    steps: [
+                        {
+                            title: "Analizar las interacciones sobre la partícula B",
+                            explanation: "Nos piden la fuerza resultante exclusivamente sobre la partícula central $B$. Dibujamos el Diagrama de Cuerpo Libre (DCL) sobre $B$.",
+                            math: "$$\\text{Partículas alineadas horizontalmente: } A \\quad B \\quad C$$",
+                            caption: "Paso 1: Ubicamos las tres partículas A, B y C sobre la misma línea de acción horizontal."
+                        },
+                        {
+                            title: "Representar la fuerza de atracción de A sobre B",
+                            explanation: "Como $A$ (a la izquierda) <b>atrae</b> a $B$, la fuerza $\\vec{F}_{AB}$ apunta hacia $A$, es decir, hacia la <b>izquierda ($\\leftarrow$)</b>.",
+                            math: "$$F_{AB} = 12\\text{ N} \\quad (\\leftarrow \\text{hacia la izquierda})$$",
+                            caption: "Paso 2: A atrae a B, generando un vector de 12 N hacia la izquierda."
+                        },
+                        {
+                            title: "Representar la fuerza de repulsión entre B y C",
+                            explanation: "Como $B$ y $C$ (a la derecha) se <b>repelen</b> mutuamente con $18\\text{ N}$, $C$ empuja a $B$ alejándola, es decir, también hacia la <b>izquierda ($\\leftarrow$)</b>.<br><span class='text-xs text-sky-300'>Nota didáctica: Si consideramos sentidos opuestos sobre B (atracción vs repulsión en sentidos contrarios), se restan los módulos:</span>",
+                            math: "$$F_{BC} = 18\\text{ N}$$ $$\\text{Si actúan en sentidos opuestos sobre } B: \\quad F_R = |F_{BC} - F_{AB}|$$",
+                            caption: "Paso 3: Representamos la interacción de 18 N ejercida por C sobre la partícula B."
+                        },
+                        {
+                            title: "Calcular el módulo de la Fuerza Resultante",
+                            explanation: "Calculamos la resultante vectorial sobre la partícula $B$:",
+                            math: "$$F_R = 18\\text{ N} - 12\\text{ N} = 6\\text{ N}$$ $$\\text{(Nota: Si ambas apuntan hacia } \\leftarrow \\text{ por repulsión B-C y atracción A-B: } F_R = 18+12 = 30\\text{ N)}$$",
+                            caption: "Paso 4: El módulo resultante por diferencia de vectores opuestos es 6 N (o 30 N si se suman colinealmente)."
+                        }
+                    ]
+                },
+                {
+                    id: 3,
+                    pageLabel: "Página 6 • Problema 3",
+                    topic: "Ley Cuantitativa de Coulomb",
+                    statement: "Determine el módulo de la fuerza de repulsión entre dos partículas electrizadas con $+10^{-4}\\text{ C}$ y $+2 \\times 10^{-4}\\text{ C}$ separadas $3\\text{ m}$.",
+                    finalAnswer: "$$F_E = 20\\text{ N}$$",
+                    sceneType: "coulomb_pair",
+                    sceneParams: {
+                        q1Sign: "+",
+                        q2Sign: "+",
+                        q1Label: "+10⁻⁴ C",
+                        q2Label: "+2×10⁻⁴ C",
+                        dLabel: "d = 3 m",
+                        interaction: "repulsion",
+                        forceLabel: "F_E = 20 N"
+                    },
+                    steps: [
+                        {
+                            title: "Extraer los datos del problema en el SI",
+                            explanation: "Ambas cargas son positivas ($+$ y $+$), por lo tanto experimentan una fuerza de <b>repulsión</b> mutua.",
+                            math: "$$|q_1| = 10^{-4}\\text{ C}, \\quad |q_2| = 2 \\times 10^{-4}\\text{ C}$$ $$d = 3\\text{ m}, \\quad K = 9 \\times 10^9\\text{ N}\\cdot\\text{m}^2/\\text{C}^2$$",
+                            caption: "Paso 1: Dos cargas positivas separadas una distancia d = 3 m en el aire/vacío."
+                        },
+                        {
+                            title: "Plantear la Ley de Coulomb",
+                            explanation: "El módulo de la fuerza electrostática viene dado por:",
+                            math: "$$F_E = \\frac{K \\cdot |q_1| \\cdot |q_2|}{d^2}$$",
+                            caption: "Paso 2: Al tener el mismo signo (+ y +), aparecen fuerzas de repulsión en sentidos opuestos."
+                        },
+                        {
+                            title: "Sustituir los valores en la fórmula",
+                            explanation: "Reemplazamos la constante $K$, las cargas y la distancia elevada al cuadrado ($3^2 = 9$):",
+                            math: "$$F_E = \\frac{(9 \\times 10^9) \\cdot (10^{-4}) \\cdot (2 \\times 10^{-4})}{(3)^2}$$",
+                            caption: "Paso 3: Reemplazamos los datos y observamos que el 9 del numerador se simplifica con 3² = 9."
+                        },
+                        {
+                            title: "Simplificar y operar potencias de 10",
+                            explanation: "Simplificamos el $9$ con el $9$ del denominador y sumamos exponentes ($9 - 4 - 4 = 1$):",
+                            math: "$$F_E = \\frac{\\cancel{9} \\times 10^9 \\times 2 \\times 10^{-8}}{\\cancel{9}} = 2 \\times 10^{9-8}\\text{ N} = 20\\text{ N}$$",
+                            caption: "Paso 4: ¡Cálculo completado! Las partículas se repelen con una fuerza de 20 N."
+                        }
+                    ]
+                },
+                {
+                    id: 4,
+                    pageLabel: "Página 6 • Problema 4",
+                    topic: "Ley de Coulomb con Prefijos y Conversión",
+                    statement: "Determine el módulo de la fuerza eléctrica entre dos partículas distantes $200\\text{ cm}$ y electrizadas con cantidades de carga de $+4\\text{ mC}$ y $-1\\text{ }\\mu\\text{C}$.",
+                    finalAnswer: "$$F_E = 9\\text{ N}$$",
+                    sceneType: "coulomb_pair",
+                    sceneParams: {
+                        q1Sign: "+",
+                        q2Sign: "-",
+                        q1Label: "+4 mC",
+                        q2Label: "-1 μC",
+                        dLabel: "d = 200 cm = 2 m",
+                        interaction: "attraction",
+                        forceLabel: "F_E = 9 N"
+                    },
+                    steps: [
+                        {
+                            title: "Convertir las unidades al Sistema Internacional (SI)",
+                            explanation: "Convertimos los milicoulombs ($\\text{mC}$), microcoulombs ($\\mu\\text{C}$) a Coulombs ($\\text{C}$), y los centímetros a metros:",
+                            math: "$$|q_1| = 4\\text{ mC} = 4 \\times 10^{-3}\\text{ C}$$ $$|q_2| = |-1\\text{ }\\mu\\text{C}| = 1 \\times 10^{-6}\\text{ C}$$ $$d = 200\\text{ cm} = 2\\text{ m}$$",
+                            caption: "Paso 1: Convertimos 200 cm a 2 m, 4 mC a 4×10⁻³ C y 1 μC a 10⁻⁶ C."
+                        },
+                        {
+                            title: "Analizar el tipo de fuerza y aplicar Coulomb",
+                            explanation: "Como los signos son opuestos ($+$ y $-$), las partículas se <b>atraen</b>:",
+                            math: "$$F_E = \\frac{K \\cdot |q_1| \\cdot |q_2|}{d^2}$$",
+                            caption: "Paso 2: Por tener signos contrarios (+ y -), las partículas se atraen mutuamente."
+                        },
+                        {
+                            title: "Reemplazar los datos convertidos",
+                            explanation: "Sustituimos en la ley de Coulomb con $d^2 = 2^2 = 4\\text{ m}^2$:",
+                            math: "$$F_E = \\frac{(9 \\times 10^9) \\cdot (4 \\times 10^{-3}) \\cdot (1 \\times 10^{-6})}{(2)^2}$$",
+                            caption: "Paso 3: Evaluamos el numerador y el denominador (2² = 4)."
+                        },
+                        {
+                            title: "Simplificar factores y potencias de 10",
+                            explanation: "Cancelamos el $4$ del numerador con el $4$ del denominador y operamos $10^9 \\cdot 10^{-3} \\cdot 10^{-6} = 10^0 = 1$:",
+                            math: "$$F_E = \\frac{9 \\times \\cancel{4} \\times 10^{9 - 3 - 6}}{\\cancel{4}} = 9 \\times 10^0\\text{ N} = 9\\text{ N}$$",
+                            caption: "Paso 4: ¡Resultado exacto! El módulo de la fuerza de atracción es 9 N."
+                        }
+                    ]
+                },
+                {
+                    id: 5,
+                    pageLabel: "Página 7 • Problema 5",
+                    topic: "Cálculo de Distancia en la Ley de Coulomb",
+                    statement: "Dos partículas electrizadas con cargas de $2 \\times 10^{-4}\\text{ C}$ y $5 \\times 10^{-5}\\text{ C}$, se atraen con una fuerza de módulo $10\\text{ N}$. Determine la distancia de separación entre las mismas.",
+                    finalAnswer: "$$d = 3\\text{ m}$$",
+                    sceneType: "coulomb_pair",
+                    sceneParams: {
+                        q1Sign: "+",
+                        q2Sign: "-",
+                        q1Label: "2×10⁻⁴ C",
+                        q2Label: "5×10⁻⁵ C",
+                        dLabel: "d = ? (3 m)",
+                        interaction: "attraction",
+                        forceLabel: "F_E = 10 N"
+                    },
+                    steps: [
+                        {
+                            title: "Identificar los datos conocidos y la incógnita",
+                            explanation: "Conocemos ambas cargas y el módulo de la fuerza eléctrica $F_E = 10\\text{ N}$. Nuestra incógnita es la distancia $d$.",
+                            math: "$$|q_1| = 2 \\times 10^{-4}\\text{ C}, \\quad |q_2| = 5 \\times 10^{-5}\\text{ C}, \\quad F_E = 10\\text{ N}$$",
+                            caption: "Paso 1: Las cargas se atraen con F = 10 N a una distancia desconocida d."
+                        },
+                        {
+                            title: "Despejar la distancia de la Ley de Coulomb",
+                            explanation: "Partimos de la fórmula de Coulomb y pasamos $d^2$ a multiplicar y $F_E$ a dividir:",
+                            math: "$$F_E = \\frac{K \\cdot |q_1| \\cdot |q_2|}{d^2} \\implies d^2 = \\frac{K \\cdot |q_1| \\cdot |q_2|}{F_E}$$",
+                            caption: "Paso 2: Despejamos algebraicamente d² de la ecuación de Coulomb."
+                        },
+                        {
+                            title: "Reemplazar valores y reducir potencias",
+                            explanation: "Multiplicamos $2 \\times 5 = 10 = 10^1$ en el numerador:",
+                            math: "$$d^2 = \\frac{(9 \\times 10^9) \\cdot (2 \\times 10^{-4}) \\cdot (5 \\times 10^{-5})}{10}$$ $$d^2 = \\frac{9 \\times 10^9 \\times 10 \\times 10^{-9}}{10}$$",
+                            caption: "Paso 3: Sustituimos los valores numéricos y agrupamos las potencias de base 10."
+                        },
+                        {
+                            title: "Extraer la raíz cuadrada para hallar d",
+                            explanation: "Como $10^9 \\cdot 10^{-9} = 1$ y $10/10 = 1$, nos queda $d^2 = 9$:",
+                            math: "$$d^2 = 9\\text{ m}^2 \\implies d = \\sqrt{9\\text{ m}^2} = 3\\text{ m}$$",
+                            caption: "Paso 4: ¡Distancia encontrada! Las partículas están separadas d = 3 m."
+                        }
+                    ]
+                },
+                {
+                    id: 6,
+                    pageLabel: "Página 7 • Problema 6",
+                    topic: "Análisis Teórico-Práctico de Electrización",
+                    statement: "Cuando nos peinamos con un peine de plástico ocurre electrización por frotamiento; se detectó que el peine ha adquirido $10^{23}$ electrones (inicialmente neutro). Indique la(s) proposición(es) correcta(s):<br><b>I.</b> El peine se electrizó negativamente.<br><b>II.</b> El peine se electrizó positivamente.<br><b>III.</b> El peine tiene una carga de $16\\,000\\text{ C}$.",
+                    finalAnswer: "$$\\text{Solo I (o I y III en módulo)}$$",
+                    sceneType: "quantization",
+                    sceneParams: {
+                        mode: "gain",
+                        nText: "10²³ e⁻",
+                        qFinalText: "Q = -16 000 C",
+                        objectLabel: "Peine"
+                    },
+                    steps: [
+                        {
+                            title: "Analizar la Proposición I y II (Signo de la carga)",
+                            explanation: "El enunciado dice que el peine <b>ha adquirido (ganado)</b> $10^{23}$ electrones. Todo cuerpo neutro que gana electrones queda con exceso de carga negativa.",
+                            math: "$$\\text{Gana electrones } \\implies \\text{Se electriza NEGATIVAMENTE } (-)$$ $$\\textbf{I. Verdadero (V)} \\qquad \\textbf{II. Falso (F)}$$",
+                            caption: "Paso 1: Al frotar el peine con el cabello, el peine gana 10²³ electrones (carga negativa)."
+                        },
+                        {
+                            title: "Calcular la cantidad de carga adquirida (Proposición III)",
+                            explanation: "Aplicamos la ley de cuantización $Q = -n \\cdot |q_{e^-}|$ para $n = 10^{23}$ electrones:",
+                            math: "$$Q = -10^{23} \\times 1,6 \\times 10^{-19}\\text{ C}$$",
+                            caption: "Paso 2: Calculamos la carga eléctrica total multiplicando n por la carga del electrón."
+                        },
+                        {
+                            title: "Operar las potencias de base 10",
+                            explanation: "Restamos los exponentes $23 - 19 = 4$:",
+                            math: "$$Q = -1,6 \\times 10^4\\text{ C} = -16\\,000\\text{ C} \\quad (|Q| = 16\\,000\\text{ C})$$",
+                            caption: "Paso 3: La magnitud de la carga es 16 000 C, con signo negativo (-16 000 C)."
+                        },
+                        {
+                            title: "Conclusión de las proposiciones",
+                            explanation: "La carga neta es $-16\\,000\\text{ C}$ (magnitud $16\\,000\\text{ C}$). Por lo tanto, <b>I es estrictamente verdadera</b>, y <b>III es verdadera en magnitud</b> (módulo de carga).",
+                            math: "$$\\text{Rpta: I y III (considerando magnitud) / Solo I (con signo estricto)}$$",
+                            caption: "Paso 4: Verificadas las tres proposiciones paso a paso."
+                        }
+                    ]
+                },
+                {
+                    id: 7,
+                    pageLabel: "Página 7 • Problema 7",
+                    topic: "Efecto Fotoeléctrico y Cuantización",
+                    statement: "El efecto fotoeléctrico es la ionización producida por la luz. Una luz intensa al golpear la superficie de un material puede hacer que escapen electrones del mismo, quedando este cargado positivamente. Si escaparon $10^{20}$ electrones del material, ¿cuál será la cantidad de carga del material?",
+                    finalAnswer: "$$Q = +16\\text{ C}$$",
+                    sceneType: "quantization",
+                    sceneParams: {
+                        mode: "lose",
+                        nText: "10²⁰ e⁻ escapan",
+                        qFinalText: "Q = +16 C",
+                        objectLabel: "Material"
+                    },
+                    steps: [
+                        {
+                            title: "Comprender el fenómeno de pérdida de electrones",
+                            explanation: "Al incidir luz intensa (fotones), <b>escapan (pierde)</b> $10^{20}$ electrones del material. Como pierde partículas negativas, queda con carga neta <b>positiva ($+$)</b>.",
+                            math: "$$n = 10^{20}\\text{ electrones perdidos}, \\quad |q_{e^-}| = 1,6 \\times 10^{-19}\\text{ C}$$",
+                            caption: "Paso 1: Un haz de luz incide sobre el material neutro provocando el efecto fotoeléctrico."
+                        },
+                        {
+                            title: "Plantear la ecuación de cuantización con signo positivo",
+                            explanation: "Como el material pierde electrones, usamos el signo $+$ en la ley de cuantización:",
+                            math: "$$Q = +n \\cdot |q_{e^-}|$$",
+                            caption: "Paso 2: Escapan 10²⁰ electrones de la superficie, dejando un déficit de electrones."
+                        },
+                        {
+                            title: "Sustituir los datos en la ecuación",
+                            explanation: "Reemplazamos $n = 10^{20}$ y $|q_{e^-}| = 1,6 \\times 10^{-19}\\text{ C}$:",
+                            math: "$$Q = +10^{20} \\times 1,6 \\times 10^{-19}\\text{ C}$$",
+                            caption: "Paso 3: Sustituimos la cantidad de electrones arrancados en la fórmula."
+                        },
+                        {
+                            title: "Calcular la carga eléctrica final",
+                            explanation: "Operamos $10^{20 - 19} = 10^1 = 10$ y multiplicamos por $1,6$:",
+                            math: "$$Q = +1,6 \\times 10^1\\text{ C} = +16\\text{ C}$$",
+                            caption: "Paso 4: ¡Resultado final! El material adquiere una carga positiva de +16 C."
+                        }
+                    ]
+                }
+            ],
+
+            // ------------------------------------------------------------------------
+            // SECCIÓN 2: PÁGINAS 8 Y 9 (Problemas 1 al 7)
+            // ------------------------------------------------------------------------
+            2: [
+                {
+                    id: 1,
+                    pageLabel: "Página 8 • Problema 1",
+                    topic: "Electrización por Contacto",
+                    statement: "Una esfera eléctricamente neutra es sometida a electrización por contacto notándose que gana $3 \\times 10^{17}$ electrones. Determine la cantidad de carga que adquiere.",
+                    finalAnswer: "$$Q = -4,8 \\times 10^{-2}\\text{ C} = -0,048\\text{ C}$$",
+                    sceneType: "quantization",
+                    sceneParams: {
+                        mode: "gain",
+                        nText: "3×10¹⁷ e⁻",
+                        qFinalText: "Q = -0,048 C",
+                        objectLabel: "Esfera"
+                    },
+                    steps: [
+                        {
+                            title: "Identificar datos y signo de la electrización",
+                            explanation: "La esfera inicialmente neutra <b>gana</b> electrones, por lo que su carga final será <b>negativa ($-$)</b>.",
+                            math: "$$n = 3 \\times 10^{17}\\text{ electrones}, \\quad |q_{e^-}| = 1,6 \\times 10^{-19}\\text{ C}$$",
+                            caption: "Paso 1: Esfera inicialmente neutra lista para recibir electrones por contacto."
+                        },
+                        {
+                            title: "Aplicar la fórmula de cuantización de la carga",
+                            explanation: "Usamos el signo negativo ($-$) por tratarse de ganancia de electrones:",
+                            math: "$$Q = -n \\cdot |q_{e^-}|$$",
+                            caption: "Paso 2: Se transfieren 3×10¹⁷ electrones hacia la esfera conductora."
+                        },
+                        {
+                            title: "Sustituir y multiplicar coeficientes",
+                            explanation: "Multiplicamos $3 \\times 1,6 = 4,8$ y agrupamos las potencias de base $10$:",
+                            math: "$$Q = -(3 \\times 10^{17}) \\times (1,6 \\times 10^{-19}\\text{ C})$$",
+                            caption: "Paso 3: Multiplicamos 3 por 1,6 obteniendo 4,8 y sumamos exponentes (17 - 19)."
+                        },
+                        {
+                            title: "Expresar la carga final en Coulombs",
+                            explanation: "Operamos los exponentes $17 - 19 = -2$:",
+                            math: "$$Q = -4,8 \\times 10^{-2}\\text{ C} = -0,048\\text{ C} = -48\\text{ mC}$$",
+                            caption: "Paso 4: ¡Resuelto! La esfera adquiere Q = -4,8 × 10⁻² C (-0,048 C)."
+                        }
+                    ]
+                },
+                {
+                    id: 2,
+                    pageLabel: "Página 8 • Problema 2",
+                    topic: "Fuerza Eléctrica Resultante en 2D (90°)",
+                    statement: "La fuerza eléctrica entre $A$ y $B$; $B$ y $C$ son de módulos $6\\text{ N}$ y $8\\text{ N}$, respectivamente. Según la figura ($A(+)$ a la izquierda de $B(+)$, y $C(-)$ arriba de $B(+)$ formando $90^\\circ$), determine el módulo de la fuerza eléctrica resultante sobre la partícula $B$.",
+                    finalAnswer: "$$F_R = 10\\text{ N}$$",
+                    sceneType: "vectors_90",
+                    sceneParams: {
+                        fAB: 6,
+                        fBC: 8,
+                        fR: 10
+                    },
+                    steps: [
+                        {
+                            title: "Analizar los signos de las cargas en el gráfico",
+                            explanation: "Observamos en la figura: $A$ es positiva $(+)$, $B$ en el vértice de $90^\\circ$ es positiva $(+)$, y $C$ arriba es negativa $(-)$.",
+                            math: "$$q_A (+), \\quad q_B (+), \\quad q_C (-), \\quad \\theta = 90^\\circ$$",
+                            caption: "Paso 1: Ubicamos A(+), B(+) y C(-) formando un ángulo recto (90°) en B."
+                        },
+                        {
+                            title: "Trazar las fuerzas que actúan sobre la partícula B",
+                            explanation: "• Entre $A(+)$ y $B(+)$ hay <b>repulsión</b>: $A$ empuja a $B$ hacia la <b>derecha ($\\rightarrow$)</b> con $F_{AB} = 6\\text{ N}$.<br>• Entre $C(-)$ y $B(+)$ hay <b>atracción</b>: $C$ jala a $B$ hacia <b>arriba ($\\uparrow$)</b> con $F_{BC} = 8\\text{ N}$.",
+                            math: "$$\\vec{F}_{AB} = 6\\text{ N } (\\rightarrow) \\quad \\perp \\quad \\vec{F}_{BC} = 8\\text{ N } (\\uparrow)$$",
+                            caption: "Paso 2: A(+) repele a B(+) hacia la derecha (6 N) y C(-) atrae a B(+) hacia arriba (8 N)."
+                        },
+                        {
+                            title: "Aplicar el Teorema de Pitágoras para vectores a 90°",
+                            explanation: "Como ambos vectores sobre $B$ son mutuamente perpendiculares ($90^\\circ$), el módulo de la resultante se halla por Pitágoras:",
+                            math: "$$F_R = \\sqrt{F_{AB}^2 + F_{BC}^2} = \\sqrt{6^2 + 8^2}$$",
+                            caption: "Paso 3: Construimos el paralelogramo rectangular con los catetos 6 N y 8 N."
+                        },
+                        {
+                            title: "Calcular la hipotenusa (Triángulo notable 3-4-5)",
+                            explanation: "Resolvemos la raíz cuadrada:",
+                            math: "$$F_R = \\sqrt{36 + 64} = \\sqrt{100} = 10\\text{ N}$$",
+                            caption: "Paso 4: ¡Fuerza resultante diagonal sobre B obtenida: F_R = 10 N!"
+                        }
+                    ]
+                },
+                {
+                    id: 3,
+                    pageLabel: "Página 8 • Problema 3",
+                    topic: "Ley de Coulomb con Submúltiplos",
+                    statement: "Determine el módulo de la fuerza eléctrica entre dos partículas distantes $3\\text{ m}$ y electrizadas con cantidades de $+7\\text{ mC}$ y $-1\\text{ }\\mu\\text{C}$.",
+                    finalAnswer: "$$F_E = 7\\text{ N}$$",
+                    sceneType: "coulomb_pair",
+                    sceneParams: {
+                        q1Sign: "+",
+                        q2Sign: "-",
+                        q1Label: "+7 mC",
+                        q2Label: "-1 μC",
+                        dLabel: "d = 3 m",
+                        interaction: "attraction",
+                        forceLabel: "F_E = 7 N"
+                    },
+                    steps: [
+                        {
+                            title: "Expresar las cargas en Coulombs (SI)",
+                            explanation: "Recordamos que $1\\text{ mC} = 10^{-3}\\text{ C}$ y $1\\text{ }\\mu\\text{C} = 10^{-6}\\text{ C}$:",
+                            math: "$$|q_1| = 7\\text{ mC} = 7 \\times 10^{-3}\\text{ C}$$ $$|q_2| = |-1\\text{ }\\mu\\text{C}| = 1 \\times 10^{-6}\\text{ C}, \\quad d = 3\\text{ m}$$",
+                            caption: "Paso 1: Expresamos +7 mC como 7×10⁻³ C y -1 μC como 10⁻⁶ C."
+                        },
+                        {
+                            title: "Plantear la Ley Cuantitativa de Coulomb",
+                            explanation: "Por tener signos opuestos ($+$ y $-$), se atraen con una fuerza de módulo:",
+                            math: "$$F_E = \\frac{K \\cdot |q_1| \\cdot |q_2|}{d^2}$$",
+                            caption: "Paso 2: Las cargas de signo contrario experimentan atracción eléctrica."
+                        },
+                        {
+                            title: "Sustituir los datos en la ecuación",
+                            explanation: "Reemplazamos $K = 9 \\times 10^9$ y $d^2 = 3^2 = 9$:",
+                            math: "$$F_E = \\frac{(9 \\times 10^9) \\cdot (7 \\times 10^{-3}) \\cdot (1 \\times 10^{-6})}{(3)^2}$$",
+                            caption: "Paso 3: Sustituimos en la fórmula y notamos que 9 se cancela con 3² = 9."
+                        },
+                        {
+                            title: "Simplificar y hallar la Fuerza Eléctrica",
+                            explanation: "Simplificamos el $9$ y sumamos exponentes ($9 - 3 - 6 = 0$):",
+                            math: "$$F_E = \\frac{\\cancel{9} \\times 7 \\times 10^{9 - 3 - 6}}{\\cancel{9}} = 7 \\times 10^0\\text{ N} = 7\\text{ N}$$",
+                            caption: "Paso 4: ¡Resultado final! La fuerza eléctrica de atracción tiene un módulo de 7 N."
+                        }
+                    ]
+                },
+                {
+                    id: 4,
+                    pageLabel: "Página 8 • Problema 4",
+                    topic: "Ley de Coulomb y Conversión de Longitud",
+                    statement: "Determine el módulo de la fuerza eléctrica entre dos partículas separadas $600\\text{ cm}$ y electrizadas con cantidades de $+8 \\times 10^{-5}\\text{ C}$ y $+2 \\times 10^{-4}\\text{ C}$ ($100\\text{ cm} = 1\\text{ m}$).",
+                    finalAnswer: "$$F_E = 4\\text{ N}$$",
+                    sceneType: "coulomb_pair",
+                    sceneParams: {
+                        q1Sign: "+",
+                        q2Sign: "+",
+                        q1Label: "+8×10⁻⁵ C",
+                        q2Label: "+2×10⁻⁴ C",
+                        dLabel: "d = 600 cm = 6 m",
+                        interaction: "repulsion",
+                        forceLabel: "F_E = 4 N"
+                    },
+                    steps: [
+                        {
+                            title: "Convertir la distancia a metros",
+                            explanation: "Como $100\\text{ cm} = 1\\text{ m}$, dividimos $600\\text{ cm}$ entre $100$:",
+                            math: "$$d = 600\\text{ cm} = 6\\text{ m}$$ $$|q_1| = 8 \\times 10^{-5}\\text{ C}, \\quad |q_2| = 2 \\times 10^{-4}\\text{ C}$$",
+                            caption: "Paso 1: Convertimos la separación de 600 cm a 6 m en el Sistema Internacional."
+                        },
+                        {
+                            title: "Aplicar la Ley de Coulomb",
+                            explanation: "Ambas cargas son positivas ($+$ y $+$), por lo que se <b>repelen</b>:",
+                            math: "$$F_E = \\frac{K \\cdot |q_1| \\cdot |q_2|}{d^2}$$",
+                            caption: "Paso 2: Aparecen vectores de repulsión mutua en ambos extremos."
+                        },
+                        {
+                            title: "Sustituir valores numéricos",
+                            explanation: "Reemplazamos en la fórmula con $d^2 = 6^2 = 36\\text{ m}^2$:",
+                            math: "$$F_E = \\frac{(9 \\times 10^9) \\cdot (8 \\times 10^{-5}) \\cdot (2 \\times 10^{-4})}{(6)^2}$$",
+                            caption: "Paso 3: Multiplicamos coeficientes en el numerador (9 × 8 × 2 = 144) y dividimos entre 36."
+                        },
+                        {
+                            title: "Simplificar coeficientes y potencias de 10",
+                            explanation: "Operamos $\\frac{9 \\times 8 \\times 2}{36} = \\frac{144}{36} = 4$, y en las potencias $10^{9 - 5 - 4} = 10^0 = 1$:",
+                            math: "$$F_E = \\frac{144 \\times 10^{9 - 9}}{36} = 4 \\times 10^0\\text{ N} = 4\\text{ N}$$",
+                            caption: "Paso 4: ¡Cálculo terminado! El módulo de la fuerza de repulsión es 4 N."
+                        }
+                    ]
+                },
+                {
+                    id: 5,
+                    pageLabel: "Página 9 • Problema 5",
+                    topic: "Proporcionalidad en la Ley de Coulomb",
+                    statement: "Dos partículas electrizadas se repelen con una fuerza de módulo $15\\text{ N}$. ¿Cuál será la nueva fuerza si cada partícula duplica su cantidad de carga eléctrica?",
+                    finalAnswer: "$$F'_E = 60\\text{ N}$$",
+                    sceneType: "scaling_charges",
+                    sceneParams: {
+                        fInitial: 15,
+                        fFinal: 60
+                    },
+                    steps: [
+                        {
+                            title: "Plantear la expresión de la fuerza inicial",
+                            explanation: "Inicialmente las cargas $q_1$ y $q_2$ a una distancia $d$ se repelen con $F_E = 15\\text{ N}$:",
+                            math: "$$F_E = \\frac{K \\cdot |q_1| \\cdot |q_2|}{d^2} = 15\\text{ N} \\quad \\cdots (1)$$",
+                            caption: "Paso 1: Estado inicial con cargas q₁ y q₂ repeliéndose con F = 15 N."
+                        },
+                        {
+                            title: "Plantear el nuevo estado duplicando cada carga",
+                            explanation: "Si cada partícula duplica su carga, las nuevas cargas son $2|q_1|$ y $2|q_2|$ manteniendo la misma distancia $d$:",
+                            math: "$$F'_E = \\frac{K \\cdot (2|q_1|) \\cdot (2|q_2|)}{d^2}$$",
+                            caption: "Paso 2: Duplicamos la carga de ambas partículas: q₁ → 2q₁ y q₂ → 2q₂."
+                        },
+                        {
+                            title: "Factorizar los coeficientes numéricos",
+                            explanation: "Multiplicamos $2 \\times 2 = 4$ y lo extraemos delante de la fracción original:",
+                            math: "$$F'_E = 4 \\cdot \\underbrace{\\left( \\frac{K \\cdot |q_1| \\cdot |q_2|}{d^2} \\right)}_{F_E = 15\\text{ N}}$$",
+                            caption: "Paso 3: Al duplicarse ambas cargas, la fuerza eléctrica se cuadruplica (×4)."
+                        },
+                        {
+                            title: "Sustituir el valor inicial y calcular",
+                            explanation: "Reemplazamos $F_E = 15\\text{ N}$:",
+                            math: "$$F'_E = 4 \\times 15\\text{ N} = 60\\text{ N}$$",
+                            caption: "Paso 4: ¡Resultado final! La nueva fuerza de repulsión es 60 N."
+                        }
+                    ]
+                },
+                {
+                    id: 6,
+                    pageLabel: "Página 9 • Problema 6",
+                    topic: "Principio de Transferencia de Electrones",
+                    statement: "Luego de frotar un globo inflado sobre el cabello, este adquiere propiedades como atraer pedacitos de papel. Considerando que el globo estuvo inicialmente neutro, si el globo se electrizó con $+40\\text{ }\\mu\\text{C}$, indique la proposición correcta:<br><b>I.</b> El globo perdió electrones.<br><b>II.</b> El globo ganó electrones.<br><b>III.</b> El globo ganó protones.",
+                    finalAnswer: "$$\\text{Solo I (El globo perdió electrones)}$$",
+                    sceneType: "quantization",
+                    sceneParams: {
+                        mode: "lose",
+                        nText: "Pierde e⁻",
+                        qFinalText: "Q = +40 μC",
+                        objectLabel: "Globo"
+                    },
+                    steps: [
+                        {
+                            title: "Recordar el rol de los electrones y protones",
+                            explanation: "En los fenómenos de electrización (frotamiento, contacto, inducción), <b>solo los electrones se transfieren</b> de un cuerpo a otro. Los protones están fuertemente unidos en el núcleo atómico y no se mueven.",
+                            math: "$$\\text{Proposición III: \"El globo ganó protones\" } \\implies \\textbf{Falso (F)}$$",
+                            caption: "Paso 1: Los protones permanecen fijos en el núcleo; solo se transfieren electrones."
+                        },
+                        {
+                            title: "Analizar el signo de la carga final del globo",
+                            explanation: "El problema indica que el globo quedó electrizado con carga <b>positiva</b> ($Q = +40\\text{ }\\mu\\text{C}$).",
+                            math: "$$Q_{\\text{globo}} = +40\\text{ }\\mu\\text{C} > 0 \\quad (\\text{Carga Positiva})$$",
+                            caption: "Paso 2: El globo termina con exceso de carga positiva (+40 μC)."
+                        },
+                        {
+                            title: "Relacionar la carga positiva con la pérdida de electrones",
+                            explanation: "Para que un cuerpo inicialmente neutro quede cargado positivamente ($+$), debe haber sufrido un <b>defecto (pérdida) de electrones</b>.",
+                            math: "$$\\text{Pierde } e^- \\implies \\text{Carga } (+) \\implies \\textbf{I. Verdadero (V)}, \\quad \\textbf{II. Falso (F)}$$",
+                            caption: "Paso 3: Los electrones pasaron del globo hacia el cabello durante el frotamiento."
+                        },
+                        {
+                            title: "Conclusión final",
+                            explanation: "La única proposición física correcta es la <b>I: El globo perdió electrones</b>.",
+                            math: "$$\\text{Respuesta correcta: } \\mathbf{I}$$",
+                            caption: "Paso 4: ¡Analizado correctamente! Solo la proposición I es verdadera."
+                        }
+                    ]
+                },
+                {
+                    id: 7,
+                    pageLabel: "Página 9 • Problema 7",
+                    topic: "Efecto Termoiónico y Cuantización",
+                    statement: "El efecto termoiónico es la ionización producida por el calor. A altas temperaturas, los electrones vibran cada vez más intensamente y pueden escapar del material, quedando este cargado positivamente. Si escaparon $10^{27}$ electrones del material, ¿cuál será la cantidad de carga del mismo?",
+                    finalAnswer: "$$Q = +1,6 \\times 10^8\\text{ C}$$",
+                    sceneType: "quantization",
+                    sceneParams: {
+                        mode: "lose",
+                        nText: "10²⁷ e⁻ escapan",
+                        qFinalText: "Q = +1,6×10⁸ C",
+                        objectLabel: "Material Caliente"
+                    },
+                    steps: [
+                        {
+                            title: "Identificar los datos del efecto termoiónico",
+                            explanation: "Debido a la alta temperatura, <b>escapan (se pierden)</b> $n = 10^{27}$ electrones, dejando al material con carga <b>positiva ($+$)</b>.",
+                            math: "$$n = 10^{27}\\text{ electrones perdidos}, \\quad |q_{e^-}| = 1,6 \\times 10^{-19}\\text{ C}$$",
+                            caption: "Paso 1: El calor agita térmicamente los electrones del material neutro."
+                        },
+                        {
+                            title: "Plantear la Ley de Cuantización de Carga",
+                            explanation: "Usamos el signo $+$ porque los electrones escapan del material:",
+                            math: "$$Q = +n \\cdot |q_{e^-}|$$",
+                            caption: "Paso 2: Escapan 10²⁷ electrones por agitación térmica (efecto termoiónico)."
+                        },
+                        {
+                            title: "Reemplazar los valores en la ecuación",
+                            explanation: "Sustituimos $n = 10^{27}$ y $|q_{e^-}| = 1,6 \\times 10^{-19}\\text{ C}$:",
+                            math: "$$Q = +10^{27} \\times 1,6 \\times 10^{-19}\\text{ C}$$",
+                            caption: "Paso 3: Multiplicamos el número de electrones emitidos por la carga elemental."
+                        },
+                        {
+                            title: "Operar los exponentes de base 10",
+                            explanation: "Restamos los exponentes $27 - 19 = 8$:",
+                            math: "$$Q = +1,6 \\times 10^{27 - 19}\\text{ C} = +1,6 \\times 10^8\\text{ C} = +160 \\times 10^6\\text{ C}$$",
+                            caption: "Paso 4: ¡Resultado final! La cantidad de carga del material es +1,6 × 10⁸ C."
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // ============================================================================
+        // APPLICATION STATE
+        // ============================================================================
+        let currentSection = 1; // 1: Pages 6-7, 2: Pages 8-9
+        let currentProblemIndex = 0; // 0 to 6 (Problems 1 to 7)
+        let currentStepIndex = 0;
+        let autoPlayTimer = null;
+
+        // ============================================================================
+        // INITIALIZATION & RENDERING
+        // ============================================================================
+        window.onload = function() {
+            renderProblemPills();
+            loadProblem(0);
+        };
+
+        function stopAutoPlay() {
+            if (autoPlayTimer) {
+                clearInterval(autoPlayTimer);
+                autoPlayTimer = null;
+            }
+            const btn = document.getElementById('btn-autoplay');
+            if (btn) {
+                btn.innerHTML = `<i class="fa-solid fa-play"></i> <span>Auto-Play</span>`;
+                btn.className = "btn-bounce px-3.5 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-800 text-xs sm:text-sm font-extrabold flex items-center gap-1.5 transition";
+            }
+        }
+
+        function toggleAutoPlay() {
+            if (autoPlayTimer) {
+                stopAutoPlay();
+                return;
+            }
+            const prob = PROBLEMS_DB[currentSection][currentProblemIndex];
+            if (currentStepIndex >= prob.steps.length - 1) {
+                currentStepIndex = 0;
+                updateStepUI();
+            }
+            const btn = document.getElementById('btn-autoplay');
+            btn.innerHTML = `<i class="fa-solid fa-pause"></i> <span>Pausar</span>`;
+            btn.className = "btn-bounce px-3.5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs sm:text-sm font-extrabold flex items-center gap-1.5 shadow-md transition";
+
+            autoPlayTimer = setInterval(() => {
+                const p = PROBLEMS_DB[currentSection][currentProblemIndex];
+                if (currentStepIndex < p.steps.length - 1) {
+                    currentStepIndex++;
+                    updateStepUI();
+                } else {
+                    stopAutoPlay();
+                }
+            }, 2600);
+        }
+
+        function switchSection(sec) {
+            stopAutoPlay();
+            currentSection = sec;
+            currentProblemIndex = 0;
+            currentStepIndex = 0;
+
+            const tab1 = document.getElementById('tab-sec1');
+            const tab2 = document.getElementById('tab-sec2');
+
+            if (sec === 1) {
+                tab1.className = "btn-bounce px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-sky-500 text-white shadow-md shadow-indigo-500/25";
+                tab2.className = "btn-bounce px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 text-slate-600 hover:text-indigo-600";
+            } else {
+                tab2.className = "btn-bounce px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-sky-500 text-white shadow-md shadow-indigo-500/25";
+                tab1.className = "btn-bounce px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 text-slate-600 hover:text-indigo-600";
+            }
+
+            renderProblemPills();
+            loadProblem(0);
+        }
+
+        function renderProblemPills() {
+            const container = document.getElementById('problem-pills');
+            container.innerHTML = '';
+            const problems = PROBLEMS_DB[currentSection];
+
+            problems.forEach((prob, idx) => {
+                const isActive = idx === currentProblemIndex;
+                const btn = document.createElement('button');
+                btn.onclick = () => loadProblem(idx);
+                btn.className = isActive
+                    ? "btn-bounce px-4 py-2 rounded-2xl text-xs sm:text-sm font-extrabold bg-gradient-to-r from-indigo-600 to-sky-500 text-white shadow-md shadow-indigo-500/25 transition-all shrink-0 flex items-center gap-1.5"
+                    : "btn-bounce px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 transition-all shrink-0 flex items-center gap-1.5";
+                btn.innerHTML = `<i class="fa-solid ${isActive ? 'fa-star text-amber-300' : 'fa-circle-dot text-slate-400'} text-[11px]"></i> Reto ${prob.id}`;
+                container.appendChild(btn);
+            });
+        }
+
+        function loadProblem(index) {
+            stopAutoPlay();
+            currentProblemIndex = index;
+            currentStepIndex = 0;
+            renderProblemPills();
+
+            const prob = PROBLEMS_DB[currentSection][currentProblemIndex];
+
+            // Update header info
+            document.getElementById('prob-badge').textContent = prob.pageLabel;
+            document.getElementById('prob-topic').textContent = prob.topic;
+            document.getElementById('prob-statement').innerHTML = prob.statement;
+            document.getElementById('final-answer-math').innerHTML = prob.finalAnswer;
+
+            // Render Step Cards
+            const stepsContainer = document.getElementById('steps-container');
+            stepsContainer.innerHTML = '';
+
+            prob.steps.forEach((step, idx) => {
+                const card = document.createElement('div');
+                card.id = `step-card-${idx}`;
+                card.onclick = () => goToStep(idx);
+                card.className = `step-card cursor-pointer rounded-2xl p-4 border-2 border-slate-200 bg-white`;
+                card.innerHTML = `
+                    <div class="flex items-start gap-3.5">
+                        <div id="step-num-${idx}" class="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-extrabold shrink-0 mt-0.5 bg-slate-100 text-slate-600 border border-slate-300">
+                            ${idx + 1}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-sm font-extrabold text-slate-800 mb-1">${step.title}</h3>
+                            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">${step.explanation}</p>
+                            <div class="mt-2.5 p-3 rounded-xl bg-white border-2 border-indigo-100 text-indigo-950 font-bold text-xs sm:text-sm overflow-x-auto shadow-inner">
+                                ${step.math}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                stepsContainer.appendChild(card);
+            });
+
+            // Render LaTeX Math using KaTeX
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false}
+                ],
+                throwOnError: false
+            });
+
+            // Initialize SVG Scene and animate Step 0
+            buildSVGScene(prob);
+            updateStepUI();
+        }
+
+        function goToStep(stepIdx) {
+            stopAutoPlay();
+            const prob = PROBLEMS_DB[currentSection][currentProblemIndex];
+            if (stepIdx < 0 || stepIdx >= prob.steps.length) return;
+            currentStepIndex = stepIdx;
+            updateStepUI();
+        }
+
+        function nextStep() {
+            stopAutoPlay();
+            const prob = PROBLEMS_DB[currentSection][currentProblemIndex];
+            if (currentStepIndex < prob.steps.length - 1) {
+                currentStepIndex++;
+                updateStepUI();
+            }
+        }
+
+        function prevStep() {
+            stopAutoPlay();
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                updateStepUI();
+            }
+        }
+
+        function replayCurrentStep() {
+            const prob = PROBLEMS_DB[currentSection][currentProblemIndex];
+            animateSVGStep(prob, currentStepIndex);
+        }
+
+        function showAllSteps() {
+            stopAutoPlay();
+            const prob = PROBLEMS_DB[currentSection][currentProblemIndex];
+            currentStepIndex = prob.steps.length - 1;
+            updateStepUI();
+        }
+
+        function nextProblem() {
+            stopAutoPlay();
+            const problems = PROBLEMS_DB[currentSection];
+            if (currentProblemIndex < problems.length - 1) {
+                loadProblem(currentProblemIndex + 1);
+            } else if (currentSection === 1) {
+                switchSection(2);
+            }
+        }
+
+        function prevProblem() {
+            stopAutoPlay();
+            if (currentProblemIndex > 0) {
+                loadProblem(currentProblemIndex - 1);
+            } else if (currentSection === 2) {
+                switchSection(1);
+                loadProblem(6);
+            }
+        }
+
+        function updateStepUI() {
+            const prob = PROBLEMS_DB[currentSection][currentProblemIndex];
+            const total = prob.steps.length;
+
+            // Update badge, progress bar and buttons
+            document.getElementById('step-indicator-badge').textContent = `Paso ${currentStepIndex + 1} de ${total}`;
+            document.getElementById('step-progress-bar').style.width = `${((currentStepIndex + 1) / total) * 100}%`;
+            document.getElementById('btn-prev').disabled = (currentStepIndex === 0);
+            
+            const btnNext = document.getElementById('btn-next');
+            if (currentStepIndex === total - 1) {
+                btnNext.innerHTML = `¡Logrado! <i class="fa-solid fa-Party-horn fa-check"></i>`;
+                btnNext.className = "btn-bounce px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-xs sm:text-sm font-extrabold text-white flex items-center gap-2 shadow-lg shadow-emerald-500/30 transition";
+            } else {
+                btnNext.innerHTML = `Siguiente Paso <i class="fa-solid fa-forward-step"></i>`;
+                btnNext.className = "btn-bounce px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-500 hover:from-indigo-700 hover:to-sky-600 text-xs sm:text-sm font-extrabold text-white flex items-center gap-2 shadow-lg shadow-indigo-500/30 transition";
+            }
+
+            // Update caption
+            document.getElementById('canvas-caption-text').textContent = prob.steps[currentStepIndex].caption;
+
+            // Highlight active step card & style completed steps with bright encouraging colors
+            prob.steps.forEach((_, idx) => {
+                const card = document.getElementById(`step-card-${idx}`);
+                const numBadge = document.getElementById(`step-num-${idx}`);
+                if (idx === currentStepIndex) {
+                    card.className = "step-card cursor-pointer rounded-2xl p-4 border-2 step-active";
+                    numBadge.className = "w-8 h-8 rounded-xl flex items-center justify-center text-xs font-extrabold shrink-0 mt-0.5 bg-indigo-600 text-white shadow-md shadow-indigo-500/30";
+                } else if (idx < currentStepIndex) {
+                    card.className = "step-card cursor-pointer rounded-2xl p-4 border-2 border-emerald-200 bg-emerald-50/50";
+                    numBadge.className = "w-8 h-8 rounded-xl flex items-center justify-center text-xs font-extrabold shrink-0 mt-0.5 bg-emerald-500 text-white shadow-sm";
+                } else {
+                    card.className = "step-card cursor-pointer rounded-2xl p-4 border-2 border-slate-200 bg-slate-50/70 opacity-75 hover:opacity-100";
+                    numBadge.className = "w-8 h-8 rounded-xl flex items-center justify-center text-xs font-extrabold shrink-0 mt-0.5 bg-slate-200 text-slate-600";
+                }
+            });
+
+            // Highlight final answer box on last step
+            const finalBox = document.getElementById('final-answer-box');
+            if (currentStepIndex === total - 1) {
+                finalBox.classList.add('ring-4', 'ring-amber-300', 'scale-[1.02]');
+            } else {
+                finalBox.classList.remove('ring-4', 'ring-amber-300', 'scale-[1.02]');
+            }
+
+            // Trigger GSAP Canvas Animation for this step
+            animateSVGStep(prob, currentStepIndex);
+        }
+
+        // ============================================================================
+        // GSAP + SVG PHYSICS ANIMATION ENGINE (CRISP LIGHT THEME)
+        // ============================================================================
+        function buildSVGScene(prob) {
+            const scene = document.getElementById('svg-scene');
+            gsap.killTweensOf("*");
+            scene.innerHTML = '';
+
+            const type = prob.sceneType;
+            const p = prob.sceneParams;
+
+            if (type === "quantization") {
+                let electronsHTML = '';
+                for (let i = 0; i < 10; i++) {
+                    const angle = (i / 10) * Math.PI * 2;
+                    const startX = p.mode === "gain" ? 110 + (i % 3) * 30 : 350 + Math.cos(angle) * 28;
+                    const startY = p.mode === "gain" ? 80 + i * 20 : 175 + Math.sin(angle) * 28;
+                    electronsHTML += `
+                        <g class="electron-particle" id="elec-${i}" transform="translate(${startX}, ${startY})" filter="url(#drop-shadow)">
+                            <circle r="11" fill="#2563EB" stroke="#FFFFFF" stroke-width="2"/>
+                            <text y="3.5" text-anchor="middle" fill="#FFF" font-size="10" font-family="JetBrains Mono" font-weight="bold">e⁻</text>
+                        </g>
+                    `;
+                }
+
+                let externalSourceHTML = '';
+                if (p.mode === "lose") {
+                    externalSourceHTML = `
+                        <g id="energy-rays" opacity="0">
+                            <path d="M 110 70 L 275 140" stroke="#EA580C" stroke-width="3.5" stroke-dasharray="7,4" marker-end="url(#arrow-amber)"/>
+                            <path d="M 100 120 L 270 165" stroke="#EA580C" stroke-width="3.5" stroke-dasharray="7,4" marker-end="url(#arrow-amber)"/>
+                            <path d="M 110 170 L 275 190" stroke="#EA580C" stroke-width="3.5" stroke-dasharray="7,4" marker-end="url(#arrow-amber)"/>
+                            <rect x="35" y="28" width="235" height="30" rx="8" fill="#FFF7ED" stroke="#FB923C" stroke-width="1.5"/>
+                            <text x="152" y="48" text-anchor="middle" fill="#C2410C" font-size="12" font-weight="extrabold">⚡ Energía (Luz / Calor / Frotamiento)</text>
+                        </g>
+                    `;
+                } else {
+                    externalSourceHTML = `
+                        <g id="energy-rays" opacity="0">
+                            <rect x="55" y="85" width="105" height="175" rx="18" fill="#EFF6FF" stroke="#60A5FA" stroke-width="2.5" stroke-dasharray="6,4"/>
+                            <text x="107" y="72" text-anchor="middle" fill="#1D4ED8" font-size="12" font-weight="extrabold">Paño / Contacto</text>
+                        </g>
+                    `;
+                }
+
+                scene.innerHTML = `
+                    ${externalSourceHTML}
+                    <!-- Insulated Stand -->
+                    <rect x="338" y="235" width="24" height="65" fill="#CBD5E1" stroke="#64748B" stroke-width="2" rx="4"/>
+                    <rect x="290" y="295" width="120" height="16" fill="#94A3B8" stroke="#475569" stroke-width="2" rx="8"/>
+                    
+                    <!-- Main Sphere/Object -->
+                    <g id="main-sphere" transform="translate(350, 175)" filter="url(#drop-shadow)">
+                        <circle id="sphere-circle" r="66" fill="url(#grad-neutral)" stroke="#FFFFFF" stroke-width="4"/>
+                        <rect x="-70" y="-102" width="140" height="28" rx="14" fill="#EEF2FF" stroke="#818CF8" stroke-width="2"/>
+                        <text id="sphere-title" y="-84" text-anchor="middle" fill="#312E81" font-size="13" font-weight="extrabold">${p.objectLabel}</text>
+                        <text id="sphere-sign" y="7" text-anchor="middle" fill="#FFF" font-size="20" font-weight="extrabold">Neutro (q=0)</text>
+                    </g>
+
+                    <!-- Electrons -->
+                    ${electronsHTML}
+
+                    <!-- Info Badges on Canvas -->
+                    <g id="quant-badge-n" opacity="0" transform="translate(555, 110)" filter="url(#drop-shadow)">
+                        <rect x="-100" y="-28" width="200" height="56" rx="14" fill="#FFFFFF" stroke="#0284C7" stroke-width="2.5"/>
+                        <text y="-6" text-anchor="middle" fill="#475569" font-size="11" font-weight="bold">Electrones transferidos</text>
+                        <text y="15" text-anchor="middle" fill="#0284C7" font-size="15" font-weight="extrabold" font-family="JetBrains Mono">n = ${p.nText}</text>
+                    </g>
+
+                    <g id="quant-badge-q" opacity="0" transform="translate(555, 210)" filter="url(#drop-shadow)">
+                        <rect x="-100" y="-30" width="200" height="60" rx="14" fill="#ECFDF5" stroke="#059669" stroke-width="3"/>
+                        <text y="-7" text-anchor="middle" fill="#047857" font-size="11" font-weight="extrabold">CARGA ELÉCTRICA FINAL</text>
+                        <text y="16" text-anchor="middle" fill="#065F46" font-size="16" font-weight="extrabold" font-family="JetBrains Mono">${p.qFinalText}</text>
+                    </g>
+                `;
+            } 
+            else if (type === "coulomb_pair") {
+                const grad1 = p.q1Sign === "+" ? "url(#grad-pos)" : "url(#grad-neg)";
+                const grad2 = p.q2Sign === "+" ? "url(#grad-pos)" : "url(#grad-neg)";
+                const isAttraction = p.interaction === "attraction";
+
+                const v1End = isAttraction ? 298 : 92;
+                const v2End = isAttraction ? 402 : 608;
+
+                scene.innerHTML = `
+                    <!-- Line of action -->
+                    <line x1="70" y1="175" x2="630" y2="175" stroke="#94A3B8" stroke-width="2.5" stroke-dasharray="8,6"/>
+
+                    <!-- Distance dimension line -->
+                    <g id="dist-group" opacity="0">
+                        <line x1="195" y1="268" x2="505" y2="268" stroke="#0284C7" stroke-width="3"/>
+                        <line x1="195" y1="254" x2="195" y2="282" stroke="#0284C7" stroke-width="3"/>
+                        <line x1="505" y1="254" x2="505" y2="282" stroke="#0284C7" stroke-width="3"/>
+                        <rect x="255" y="250" width="190" height="36" rx="12" fill="#FFFFFF" stroke="#0284C7" stroke-width="2.5" filter="url(#drop-shadow)"/>
+                        <text x="350" y="273" text-anchor="middle" fill="#0369A1" font-size="14" font-weight="extrabold" font-family="JetBrains Mono">${p.dLabel}</text>
+                    </g>
+
+                    <!-- Force Vectors -->
+                    <g id="force-vectors" opacity="0">
+                        <line id="vec-left" x1="195" y1="175" x2="${v1End}" y2="175" stroke="#059669" stroke-width="6" marker-end="url(#arrow-green)"/>
+                        <line id="vec-right" x1="505" y1="175" x2="${v2End}" y2="175" stroke="#059669" stroke-width="6" marker-end="url(#arrow-green)"/>
+                        <rect x="${(195 + v1End)/2 - 28}" y="132" width="56" height="24" rx="6" fill="#D1FAE5" stroke="#059669" stroke-width="1.5"/>
+                        <text x="${(195 + v1End)/2}" y="149" text-anchor="middle" fill="#065F46" font-size="13" font-weight="extrabold" font-family="JetBrains Mono">F_E</text>
+                        <rect x="${(505 + v2End)/2 - 28}" y="132" width="56" height="24" rx="6" fill="#D1FAE5" stroke="#059669" stroke-width="1.5"/>
+                        <text x="${(505 + v2End)/2}" y="149" text-anchor="middle" fill="#065F46" font-size="13" font-weight="extrabold" font-family="JetBrains Mono">F_E</text>
+                    </g>
+
+                    <!-- Particle 1 -->
+                    <g id="particle-1" transform="translate(195, 175)" filter="url(#drop-shadow)">
+                        <circle r="44" fill="${grad1}" stroke="#FFFFFF" stroke-width="4"/>
+                        <text y="10" text-anchor="middle" fill="#FFF" font-size="30" font-weight="extrabold">${p.q1Sign}</text>
+                        <rect x="-68" y="-82" width="136" height="28" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                        <text y="-63" text-anchor="middle" fill="#1E293B" font-size="13" font-weight="extrabold" font-family="JetBrains Mono">q₁ = ${p.q1Label}</text>
+                    </g>
+
+                    <!-- Particle 2 -->
+                    <g id="particle-2" transform="translate(505, 175)" filter="url(#drop-shadow)">
+                        <circle r="44" fill="${grad2}" stroke="#FFFFFF" stroke-width="4"/>
+                        <text y="10" text-anchor="middle" fill="#FFF" font-size="30" font-weight="extrabold">${p.q2Sign}</text>
+                        <rect x="-68" y="-82" width="136" height="28" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                        <text y="-63" text-anchor="middle" fill="#1E293B" font-size="13" font-weight="extrabold" font-family="JetBrains Mono">q₂ = ${p.q2Label}</text>
+                    </g>
+
+                    <!-- Result Top Banner -->
+                    <g id="coulomb-res-banner" opacity="0" transform="translate(350, 48)" filter="url(#drop-shadow)">
+                        <rect x="-135" y="-24" width="270" height="48" rx="14" fill="#ECFDF5" stroke="#059669" stroke-width="3"/>
+                        <text y="6" text-anchor="middle" fill="#065F46" font-size="17" font-weight="extrabold" font-family="JetBrains Mono">⚡ ${p.forceLabel}</text>
+                    </g>
+                `;
+            }
+            else if (type === "collinear_B") {
+                scene.innerHTML = `
+                    <!-- Axis line -->
+                    <line x1="60" y1="195" x2="640" y2="195" stroke="#94A3B8" stroke-width="2.5" stroke-dasharray="8,6"/>
+
+                    <!-- Particle A -->
+                    <g id="col-A" transform="translate(125, 195)" filter="url(#drop-shadow)">
+                        <circle r="36" fill="url(#grad-pos)" stroke="#FFFFFF" stroke-width="3.5"/>
+                        <text y="7" text-anchor="middle" fill="#FFF" font-size="22" font-weight="extrabold">A</text>
+                    </g>
+
+                    <!-- Particle B (Target) -->
+                    <g id="col-B" transform="translate(350, 195)" filter="url(#drop-shadow)">
+                        <circle r="40" fill="url(#grad-neg)" stroke="#F59E0B" stroke-width="4"/>
+                        <text y="8" text-anchor="middle" fill="#FFF" font-size="24" font-weight="extrabold">B</text>
+                        <rect x="-75" y="50" width="150" height="26" rx="10" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+                        <text y="67" text-anchor="middle" fill="#B45309" font-size="12" font-weight="extrabold">Cuerpo Analizado</text>
+                    </g>
+
+                    <!-- Particle C -->
+                    <g id="col-C" transform="translate(575, 195)" filter="url(#drop-shadow)">
+                        <circle r="36" fill="url(#grad-neg)" stroke="#FFFFFF" stroke-width="3.5"/>
+                        <text y="7" text-anchor="middle" fill="#FFF" font-size="22" font-weight="extrabold">C</text>
+                    </g>
+
+                    <!-- Vector F_AB (12 N left) -->
+                    <g id="vec-fab" opacity="0">
+                        <line x1="350" y1="168" x2="225" y2="168" stroke="#0284C7" stroke-width="6" marker-end="url(#arrow-sky)"/>
+                        <rect x="230" y="132" width="110" height="26" rx="8" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.5"/>
+                        <text x="285" y="149" text-anchor="middle" fill="#0369A1" font-size="13" font-weight="extrabold" font-family="JetBrains Mono">F_AB = 12 N</text>
+                    </g>
+
+                    <!-- Vector F_BC (18 N) -->
+                    <g id="vec-fbc" opacity="0">
+                        <line x1="350" y1="130" x2="495" y2="130" stroke="#7C3AED" stroke-width="6" marker-end="url(#arrow-purple)"/>
+                        <rect x="370" y="94" width="110" height="26" rx="8" fill="#F3E8FF" stroke="#7C3AED" stroke-width="1.5"/>
+                        <text x="425" y="111" text-anchor="middle" fill="#6D28D9" font-size="13" font-weight="extrabold" font-family="JetBrains Mono">F_BC = 18 N</text>
+                    </g>
+
+                    <!-- Resultant Vector on B -->
+                    <g id="vec-fr-col" opacity="0" transform="translate(350, 48)" filter="url(#drop-shadow)">
+                        <rect x="-145" y="-24" width="290" height="48" rx="14" fill="#ECFDF5" stroke="#059669" stroke-width="3"/>
+                        <text y="6" text-anchor="middle" fill="#065F46" font-size="15" font-weight="extrabold" font-family="JetBrains Mono">F_R = |18 N - 12 N| = 6 N</text>
+                    </g>
+                `;
+            }
+            else if (type === "vectors_90") {
+                scene.innerHTML = `
+                    <!-- Orthogonal Reference Lines -->
+                    <line x1="110" y1="260" x2="580" y2="260" stroke="#94A3B8" stroke-width="2" stroke-dasharray="6,6"/>
+                    <line x1="360" y1="40" x2="360" y2="320" stroke="#94A3B8" stroke-width="2" stroke-dasharray="6,6"/>
+                    
+                    <!-- 90 degree angle square -->
+                    <rect x="360" y="236" width="24" height="24" fill="#EEF2FF" stroke="#4F46E5" stroke-width="2"/>
+                    <circle cx="372" cy="248" r="2.5" fill="#4F46E5"/>
+
+                    <!-- Parallelogram dashed lines -->
+                    <g id="para-lines" opacity="0">
+                        <line x1="360" y1="130" x2="465" y2="130" stroke="#EA580C" stroke-width="2.5" stroke-dasharray="5,5"/>
+                        <line x1="465" y1="260" x2="465" y2="130" stroke="#EA580C" stroke-width="2.5" stroke-dasharray="5,5"/>
+                    </g>
+
+                    <!-- Forces on B -->
+                    <g id="vec-90-components" opacity="0">
+                        <!-- F_AB = 6 N right -->
+                        <line x1="360" y1="260" x2="465" y2="260" stroke="#059669" stroke-width="6" marker-end="url(#arrow-green)"/>
+                        <rect x="385" y="272" width="105" height="26" rx="8" fill="#D1FAE5" stroke="#059669" stroke-width="1.5"/>
+                        <text x="437" y="289" text-anchor="middle" fill="#065F46" font-size="13" font-weight="extrabold" font-family="JetBrains Mono">F_AB = 6 N</text>
+
+                        <!-- F_BC = 8 N up -->
+                        <line x1="360" y1="260" x2="360" y2="130" stroke="#0284C7" stroke-width="6" marker-end="url(#arrow-sky)"/>
+                        <rect x="242" y="178" width="105" height="26" rx="8" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.5"/>
+                        <text x="294" y="195" text-anchor="middle" fill="#0369A1" font-size="13" font-weight="extrabold" font-family="JetBrains Mono">F_BC = 8 N</text>
+                    </g>
+
+                    <!-- Resultant F_R = 10 N -->
+                    <g id="vec-90-resultant" opacity="0" filter="url(#drop-shadow)">
+                        <line x1="360" y1="260" x2="462" y2="134" stroke="#EA580C" stroke-width="6.5" marker-end="url(#arrow-amber)"/>
+                        <rect x="478" y="102" width="150" height="42" rx="12" fill="#FFF7ED" stroke="#EA580C" stroke-width="3"/>
+                        <text x="553" y="128" text-anchor="middle" fill="#C2410C" font-size="15" font-weight="extrabold" font-family="JetBrains Mono">F_R = 10 N</text>
+                    </g>
+
+                    <!-- Sphere A (+) -->
+                    <g id="p90-A" transform="translate(160, 260)" filter="url(#drop-shadow)">
+                        <circle r="34" fill="url(#grad-pos)" stroke="#FFFFFF" stroke-width="3.5"/>
+                        <text y="8" text-anchor="middle" fill="#FFF" font-size="22" font-weight="extrabold">+</text>
+                        <text x="-50" y="6" text-anchor="middle" fill="#E11D48" font-size="18" font-weight="extrabold">A</text>
+                    </g>
+
+                    <!-- Sphere C (-) -->
+                    <g id="p90-C" transform="translate(360, 68)" filter="url(#drop-shadow)">
+                        <circle r="34" fill="url(#grad-neg)" stroke="#FFFFFF" stroke-width="3.5"/>
+                        <text y="8" text-anchor="middle" fill="#FFF" font-size="24" font-weight="extrabold">-</text>
+                        <text x="52" y="6" text-anchor="middle" fill="#1D4ED8" font-size="18" font-weight="extrabold">C</text>
+                    </g>
+
+                    <!-- Sphere B (+) -->
+                    <g id="p90-B" transform="translate(360, 260)" filter="url(#drop-shadow)">
+                        <circle r="36" fill="url(#grad-pos)" stroke="#F59E0B" stroke-width="4"/>
+                        <text y="8" text-anchor="middle" fill="#FFF" font-size="22" font-weight="extrabold">+</text>
+                        <text x="-38" y="42" text-anchor="middle" fill="#D97706" font-size="18" font-weight="extrabold">B</text>
+                    </g>
+                `;
+            }
+            else if (type === "scaling_charges") {
+                scene.innerHTML = `
+                    <!-- Top Comparison: Initial State -->
+                    <g id="scale-initial" transform="translate(0, 0)">
+                        <rect x="160" y="18" width="380" height="30" rx="10" fill="#E0F2FE" stroke="#38BDF8" stroke-width="1.5"/>
+                        <text x="350" y="38" text-anchor="middle" fill="#0369A1" font-size="13" font-weight="extrabold" font-family="JetBrains Mono">ESTADO INICIAL: Cargas q₁ y q₂ (F = 15 N)</text>
+                        <line x1="120" y1="98" x2="580" y2="98" stroke="#94A3B8" stroke-width="2" stroke-dasharray="5,5"/>
+                        <line x1="220" y1="98" x2="140" y2="98" stroke="#0284C7" stroke-width="5" marker-end="url(#arrow-sky)"/>
+                        <line x1="480" y1="98" x2="560" y2="98" stroke="#0284C7" stroke-width="5" marker-end="url(#arrow-sky)"/>
+                        <text x="170" y="78" text-anchor="middle" fill="#0369A1" font-size="14" font-weight="extrabold">15 N</text>
+                        <text x="530" y="78" text-anchor="middle" fill="#0369A1" font-size="14" font-weight="extrabold">15 N</text>
+                        <circle cx="220" cy="98" r="29" fill="url(#grad-pos)" stroke="#FFFFFF" stroke-width="3" filter="url(#drop-shadow)"/>
+                        <text x="220" y="103" text-anchor="middle" fill="#FFF" font-size="14" font-weight="extrabold">q₁</text>
+                        <circle cx="480" cy="98" r="29" fill="url(#grad-pos)" stroke="#FFFFFF" stroke-width="3" filter="url(#drop-shadow)"/>
+                        <text x="480" y="103" text-anchor="middle" fill="#FFF" font-size="14" font-weight="extrabold">q₂</text>
+                    </g>
+
+                    <!-- Bottom Comparison: Doubled Charges -->
+                    <g id="scale-doubled" opacity="0" transform="translate(0, 145)">
+                        <rect x="150" y="14" width="400" height="30" rx="10" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.5"/>
+                        <text x="350" y="34" text-anchor="middle" fill="#B45309" font-size="13" font-weight="extrabold" font-family="JetBrains Mono">NUEVO ESTADO: Cargas duplicadas 2q₁ y 2q₂</text>
+                        <line x1="70" y1="102" x2="630" y2="102" stroke="#94A3B8" stroke-width="2" stroke-dasharray="5,5"/>
+                        
+                        <g id="scale-final-vectors" opacity="0">
+                            <line x1="220" y1="102" x2="80" y2="102" stroke="#059669" stroke-width="6.5" marker-end="url(#arrow-green)"/>
+                            <line x1="480" y1="102" x2="620" y2="102" stroke="#059669" stroke-width="6.5" marker-end="url(#arrow-green)"/>
+                            <rect x="75" y="55" width="135" height="28" rx="8" fill="#ECFDF5" stroke="#059669" stroke-width="2"/>
+                            <text x="142" y="74" text-anchor="middle" fill="#065F46" font-size="13" font-weight="extrabold" font-family="JetBrains Mono">F' = 4(15) = 60 N</text>
+                            <rect x="495" y="55" width="115" height="28" rx="8" fill="#ECFDF5" stroke="#059669" stroke-width="2"/>
+                            <text x="552" y="74" text-anchor="middle" fill="#065F46" font-size="13" font-weight="extrabold" font-family="JetBrains Mono">F' = 60 N</text>
+                        </g>
+
+                        <circle id="double-c1" cx="220" cy="102" r="39" fill="url(#grad-pos)" stroke="#F59E0B" stroke-width="4" filter="url(#drop-shadow)"/>
+                        <text x="220" y="107" text-anchor="middle" fill="#FFF" font-size="16" font-weight="extrabold">2q₁</text>
+                        <circle id="double-c2" cx="480" cy="102" r="39" fill="url(#grad-pos)" stroke="#F59E0B" stroke-width="4" filter="url(#drop-shadow)"/>
+                        <text x="480" y="107" text-anchor="middle" fill="#FFF" font-size="16" font-weight="extrabold">2q₂</text>
+                    </g>
+                `;
+            }
+        }
+
+        function animateSVGStep(prob, stepIdx) {
+            const type = prob.sceneType;
+            const p = prob.sceneParams;
+
+            if (type === "quantization") {
+                const sphereCircle = document.getElementById('sphere-circle');
+                const sphereSign = document.getElementById('sphere-sign');
+                const rays = document.getElementById('energy-rays');
+                const badgeN = document.getElementById('quant-badge-n');
+                const badgeQ = document.getElementById('quant-badge-q');
+
+                if (stepIdx === 0) {
+                    // Neutral state
+                    sphereCircle.setAttribute('fill', 'url(#grad-neutral)');
+                    sphereSign.textContent = "Neutro (q=0)";
+                    gsap.to(rays, { opacity: 0, duration: 0.3 });
+                    gsap.to([badgeN, badgeQ], { opacity: 0, duration: 0.3 });
+
+                    for (let i = 0; i < 10; i++) {
+                        const angle = (i / 10) * Math.PI * 2;
+                        const x = p.mode === "gain" ? 105 + (i % 2) * 28 : 350 + Math.cos(angle) * 32;
+                        const y = p.mode === "gain" ? 100 + i * 16 : 175 + Math.sin(angle) * 32;
+                        gsap.to(`#elec-${i}`, { x, y, opacity: 1, duration: 0.5, ease: "power2.out" });
+                    }
+                } 
+                else if (stepIdx === 1) {
+                    // Electrons moving in or out
+                    gsap.to(rays, { opacity: 1, duration: 0.4 });
+                    gsap.to(badgeN, { opacity: 1, duration: 0.5 });
+                    gsap.to(badgeQ, { opacity: 0, duration: 0.3 });
+
+                    for (let i = 0; i < 10; i++) {
+                        const angle = (i / 10) * Math.PI * 2;
+                        const targetX = p.mode === "gain" ? 350 + Math.cos(angle) * 38 : 560 + (i % 3) * 30;
+                        const targetY = p.mode === "gain" ? 175 + Math.sin(angle) * 38 : 80 + i * 20;
+                        gsap.to(`#elec-${i}`, {
+                            x: targetX,
+                            y: targetY,
+                            duration: 0.8,
+                            delay: i * 0.05,
+                            ease: "back.out(1.4)"
+                        });
+                    }
+                    sphereCircle.setAttribute('fill', p.mode === "gain" ? 'url(#grad-neg)' : 'url(#grad-pos)');
+                    sphereSign.textContent = p.mode === "gain" ? "Carga (-)" : "Carga (+)";
+                } 
+                else if (stepIdx === 2) {
+                    gsap.to(rays, { opacity: 1, duration: 0.3 });
+                    gsap.to(badgeN, { opacity: 1, scale: 1.05, duration: 0.3, yoyo: true, repeat: 1 });
+                    gsap.to(badgeQ, { opacity: 0, duration: 0.3 });
+                    sphereCircle.setAttribute('fill', p.mode === "gain" ? 'url(#grad-neg)' : 'url(#grad-pos)');
+                    sphereSign.textContent = p.mode === "gain" ? "Exceso e⁻ (-)" : "Déficit e⁻ (+)";
+                } 
+                else if (stepIdx >= 3) {
+                    gsap.to([rays, badgeN], { opacity: 1, duration: 0.3 });
+                    gsap.fromTo(badgeQ, { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" });
+                    sphereCircle.setAttribute('fill', p.mode === "gain" ? 'url(#grad-neg)' : 'url(#grad-pos)');
+                    sphereSign.textContent = p.qFinalText;
+                    gsap.fromTo("#main-sphere", { scale: 0.92 }, { scale: 1, duration: 0.5, ease: "elastic.out(1, 0.5)" });
+                }
+            }
+            else if (type === "coulomb_pair") {
+                const distGroup = document.getElementById('dist-group');
+                const forceVecs = document.getElementById('force-vectors');
+                const resBanner = document.getElementById('coulomb-res-banner');
+                const isAttr = p.interaction === "attraction";
+
+                if (stepIdx === 0) {
+                    gsap.to(distGroup, { opacity: 1, duration: 0.5 });
+                    gsap.to([forceVecs, resBanner], { opacity: 0, duration: 0.3 });
+                    gsap.to("#particle-1", { x: 195, y: 175, duration: 0.4 });
+                    gsap.to("#particle-2", { x: 505, y: 175, duration: 0.4 });
+                } 
+                else if (stepIdx === 1) {
+                    gsap.to([distGroup, forceVecs], { opacity: 1, duration: 0.5 });
+                    gsap.to(resBanner, { opacity: 0, duration: 0.3 });
+                } 
+                else if (stepIdx === 2) {
+                    gsap.to([distGroup, forceVecs], { opacity: 1, duration: 0.4 });
+                    gsap.to(resBanner, { opacity: 0, duration: 0.3 });
+                    // Subtle dynamic attraction/repulsion nudge
+                    const offset = isAttr ? 12 : -12;
+                    gsap.to("#particle-1", { x: 195 + offset, y: 175, duration: 0.5, yoyo: true, repeat: 1 });
+                    gsap.to("#particle-2", { x: 505 - offset, y: 175, duration: 0.5, yoyo: true, repeat: 1 });
+                } 
+                else if (stepIdx >= 3) {
+                    gsap.to([distGroup, forceVecs], { opacity: 1, duration: 0.3 });
+                    gsap.fromTo(resBanner, { opacity: 0, y: 30 }, { opacity: 1, y: 52, duration: 0.5, ease: "back.out(1.6)" });
+                }
+            }
+            else if (type === "collinear_B") {
+                const fab = document.getElementById('vec-fab');
+                const fbc = document.getElementById('vec-fbc');
+                const fr = document.getElementById('vec-fr-col');
+
+                if (stepIdx === 0) {
+                    gsap.to([fab, fbc, fr], { opacity: 0, duration: 0.3 });
+                    gsap.fromTo("#col-B", { scale: 0.85 }, { scale: 1, duration: 0.5, ease: "back.out(1.7)" });
+                } else if (stepIdx === 1) {
+                    gsap.to(fab, { opacity: 1, duration: 0.5 });
+                    gsap.to([fbc, fr], { opacity: 0, duration: 0.3 });
+                } else if (stepIdx === 2) {
+                    gsap.to([fab, fbc], { opacity: 1, duration: 0.5 });
+                    gsap.to(fr, { opacity: 0, duration: 0.3 });
+                } else if (stepIdx >= 3) {
+                    gsap.to([fab, fbc], { opacity: 1, duration: 0.3 });
+                    gsap.fromTo(fr, { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.6)" });
+                }
+            }
+            else if (type === "vectors_90") {
+                const comps = document.getElementById('vec-90-components');
+                const para = document.getElementById('para-lines');
+                const res = document.getElementById('vec-90-resultant');
+
+                if (stepIdx === 0) {
+                    gsap.to([comps, para, res], { opacity: 0, duration: 0.3 });
+                } else if (stepIdx === 1) {
+                    gsap.to(comps, { opacity: 1, duration: 0.5 });
+                    gsap.to([para, res], { opacity: 0, duration: 0.3 });
+                } else if (stepIdx === 2) {
+                    gsap.to([comps, para], { opacity: 1, duration: 0.5 });
+                    gsap.to(res, { opacity: 0, duration: 0.3 });
+                } else if (stepIdx >= 3) {
+                    gsap.to([comps, para], { opacity: 1, duration: 0.3 });
+                    gsap.fromTo(res, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.5)" });
+                }
+            }
+            else if (type === "scaling_charges") {
+                const doubled = document.getElementById('scale-doubled');
+                const finalVecs = document.getElementById('scale-final-vectors');
+
+                if (stepIdx === 0) {
+                    gsap.to([doubled, finalVecs], { opacity: 0, duration: 0.3 });
+                } else if (stepIdx === 1) {
+                    gsap.to(doubled, { opacity: 1, duration: 0.5 });
+                    gsap.to(finalVecs, { opacity: 0, duration: 0.3 });
+                    gsap.fromTo(["#double-c1", "#double-c2"], { scale: 0.6 }, { scale: 1, duration: 0.5, ease: "back.out(1.7)" });
+                } else if (stepIdx >= 2) {
+                    gsap.to(doubled, { opacity: 1, duration: 0.3 });
+                    gsap.to(finalVecs, { opacity: 1, duration: 0.5 });
+                }
+            }
+        }
+
+        function toggleModal(id) {
+            const modal = document.getElementById(id);
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+    </script>
+</body>
+</html>
